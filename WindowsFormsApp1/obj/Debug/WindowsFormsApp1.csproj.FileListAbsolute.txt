@@ -1,0 +1,15 @@
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe.config
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.pdb
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.AssemblyReference.cache
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Form1.resources
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Properties.Resources.resources
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.GenerateResource.cache
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.CoreCompileInputs.cache
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Form2.resources
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\bin\Debug\Newtonsoft.Json.dll
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\bin\Debug\Newtonsoft.Json.xml
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.CopyComplete
+C:\учеба\учеба\курсач\8 семестр\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Form3.resources
