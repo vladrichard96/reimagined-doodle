@@ -13,22 +13,31 @@ using System.Security.Cryptography;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using Newtonsoft.Json;
-
+using System.Runtime.CompilerServices;
 
 namespace WindowsFormsApp1
 {
     public partial class Form2 : Form
     {
         int access = Form1.useraccess;
-        bool dataaccept = false;
+        public static byte[] key1, key2;
         public static List<JSONAnswer> answers = new List<JSONAnswer>();
+        public static Form2 f2;
+        public static CancellationTokenSource cts;
+        public static Kuznechik kuznechik = new Kuznechik();
         public Form2()
         {
             InitializeComponent();
+            f2 = this;
+            key1 = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            key2 = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             label2.Text = "Пользователь " + access + " категории";
             comboBox1.Items.AddRange(new string[] { "Режим шифрования", "Режим дешифрования", "Режим приёма данных" });
             textBox2.ReadOnly = true;
             button4.Enabled = false;
+            button5.Enabled = false;
+            kuznechik.RoundKeys(key1, key2);
+            cts = new CancellationTokenSource();
             switch (access)
             {
                 case 3:
@@ -82,31 +91,54 @@ namespace WindowsFormsApp1
             Form3 f3 = new Form3();
             f3.Show();
         }
-        private void button4_Click(object sender, EventArgs e)
+        private async void button4_Click(object sender, EventArgs e)
         {
-            if (dataaccept == false) { 
-                button4.Text = "Стоп";
-                dataaccept = true;
-                textBox1.Clear();
+            var token = cts.Token;
+            textBox1.Clear();
+            button4.Enabled = false;
+            button5.Enabled = true;
+            for (int i = 0; i < 10; i++) {
+                await DoRequest(token, textBox1);
             }
-            else
+        }
+        public static async Task DoRequest(CancellationToken canceltoken, TextBox tb)
+        {
+            if (!canceltoken.IsCancellationRequested)
             {
-                dataaccept = false;
-                button4.Text = "Начать";
+                string result = await Get(canceltoken);
+                JSONAnswer answer = JsonConvert.DeserializeObject<JSONAnswer>(result);
+                if (answer.status == "success")
+                {
+                    tb.Text += answer.text;
+                }
+                answers.Add(answer);
             }
-            if (dataaccept)
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            cts.Cancel();
+            cts.Dispose();
+            button4.Enabled = true;
+            button5.Enabled = false;
+            cts = new CancellationTokenSource();
+        }
+        public static async Task<string> Get(CancellationToken token)
+        {
+            while (true)
             {
                 using (var client = new HttpClient())
                 {
-                    var endpoint = new Uri("https://fish-text.ru/get");
-                    var result = client.GetAsync(endpoint).Result;
-                    var json = result.Content.ReadAsStringAsync().Result;
-                    JSONAnswer answer = JsonConvert.DeserializeObject<JSONAnswer>(json);
-                    if (answer.status == "success")
-                    {
-                        textBox1.Text += answer.text;
+                    try 
+                    { 
+                    Uri endpoint = new Uri("https://fish-text.ru/get");
+                    var result = await client.GetAsync(endpoint.ToString(), token).ConfigureAwait(false);
+                    return await result.Content.ReadAsStringAsync();
                     }
-                    answers.Add(answer);
+                    catch (Exception ex) 
+                    {
+                        string answer = "{\"status\":\"cancelled\",\"text\":\"\"}";
+                        return answer.ToString();
+                    }
                 }
             }
         }
@@ -117,26 +149,56 @@ namespace WindowsFormsApp1
             textBox1.Clear();
             textBox2.Clear();
             if (comboBox1.SelectedIndex == 2)
+            {
                 button4.Enabled = true;
-            else button4.Enabled = false;
+            }
+            else { button4.Enabled = false; button5.Enabled = false; }
         }
         private static string Encrypt (string input)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(input);
-            string[] h = bytes.Select(x => x.ToString("x2")).ToArray();
-            string hex = string.Concat(h);
-            return hex;
+            string res = "";
+            byte[] bytes = Encoding.Unicode.GetBytes(input);
+            int rnk = (int)Math.Ceiling((decimal)bytes.Length / 16);
+            if (bytes.Length < 16 * rnk) Array.Resize(ref bytes, 16 * rnk);
+            for (int i = 0; i < bytes.Length; i+=2) 
+            { 
+                if (bytes[i]==0 && bytes[i+1]==0) { bytes[i] = (byte)0x20; bytes[i + 1] = 0; }  
+            }
+            byte[][] data = new byte[rnk][];
+            for (int i=0; i < rnk; i++)
+            {
+                data[i] = new byte[16];
+                Array.Copy(bytes, i * 16, data[i], 0, 16);
+            }
+            for (int i = 0; i < rnk; i++)
+            {
+                data[i] = kuznechik.Encrypt(data[i]);
+                res += Encoding.Unicode.GetString(data[i]);
+            }
+            return res;
         }
         private static string Decrypt (string input)
         {
-            string[] hexBytes = new string[input.Length / 2];
-            for (int i = 0; i < hexBytes.Length; i++)
+            string res = "";
+            byte[] bytes = Encoding.Unicode.GetBytes(input);
+            int rnk = (int)Math.Ceiling((decimal)bytes.Length / 16);
+            byte[][] data = new byte[rnk][];
+            for (int i = 0; i < rnk; i++)
             {
-                hexBytes[i] = input.Substring(i * 2, 2);
+                data[i] = new byte[16];
+                Array.Copy(bytes, i * 16, data[i], 0, 16);
             }
-            byte[] resultBytes = hexBytes.Select(value => Convert.ToByte(value, 16)).ToArray();
-            string result = Encoding.UTF8.GetString(resultBytes);
-            return result;
-        }       
+            for (int i = 0; i < rnk; i++)
+            {
+                data[i] = kuznechik.Decrypt(data[i]);
+                res += Encoding.Unicode.GetString(data[i]);
+            }
+            return res;
+        }
+        private void ключиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form4 f4 = new Form4();
+            f4.Show();
+        }
     }
 }
