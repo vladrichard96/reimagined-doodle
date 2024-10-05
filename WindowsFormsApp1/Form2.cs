@@ -19,50 +19,31 @@ namespace WindowsFormsApp1
 {
     public partial class Form2 : Form
     {
-        int access = Form1.useraccess;
         public static byte[] key1, key2;
         public static List<JSONAnswer> answers = new List<JSONAnswer>();
         public static Form2 f2;
         public static CancellationTokenSource cts;
         public static Kuznechik kuznechik = new Kuznechik();
+        public static bool canEncrypt, canDecrypt, canGetResponses, canReserveCopying, canTrafAnalytic, canManageCreate, canManageModify, canManageDelete;
         public Form2()
         {
             InitializeComponent();
             f2 = this;
             key1 = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             key2 = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            label2.Text = "Пользователь " + access + " категории";
-            comboBox1.Items.AddRange(new string[] { "Режим шифрования", "Режим дешифрования", "Режим приёма данных" });
+            label2.Text = Form1.username;
+            if (canEncrypt == true) comboBox1.Items.Add("Режим шифрования");
+            if (canDecrypt == true) comboBox1.Items.Add("Режим дешифрования");
+            if (canReserveCopying == true) comboBox1.Items.Add("Режим приёма данных");
             textBox2.ReadOnly = true;
+            button1.Enabled = true;
             button4.Enabled = false;
             button5.Enabled = false;
             kuznechik.RoundKeys(key1, key2);
             cts = new CancellationTokenSource();
-            switch (access)
-            {
-                case 3:
-                    {
-                        button1.Enabled = true;
-                        button2.Enabled = false;
-                        button3.Enabled = false;
-                        break;
-                    }
-                case 2:
-                    {
-                        button1.Enabled = true;
-                        button2.Enabled = true;
-                        button3.Enabled = false;
-                        break;
-                    }
-                case 1:
-                    {
-                        button1.Enabled = true;
-                        button2.Enabled = true;
-                        button3.Enabled = true;
-                        break;
-                    }
-            }
-            
+            if (canReserveCopying == true) button2.Enabled = true; else button2.Enabled = false;
+            if (canTrafAnalytic == true) button3.Enabled = true; else button3.Enabled = false;
+            if ((canManageCreate && canManageModify && canManageDelete) == false) toolStripButton1.Enabled = false; else toolStripButton1.Enabled = true;
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -195,6 +176,13 @@ namespace WindowsFormsApp1
             }
             return res;
         }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            Form5 f5 = new Form5();
+            f5.Show();
+        }
+
         private void ключиToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Form4 f4 = new Form4();
