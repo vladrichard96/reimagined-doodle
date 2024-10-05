@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WindowsFormsApp1
 {
@@ -38,22 +40,50 @@ namespace WindowsFormsApp1
             SqlConnection sqlc = new SqlConnection(conn);
             sqlc.Open();
             SqlCommand command = new SqlCommand(sql, sqlc);
-            command.Parameters.Add("@log", SqlDbType.VarChar, 20);
-            command.Parameters["@log"].Value = textBox1.Text;
-            command.Parameters.Add("@pas", SqlDbType.VarChar, 20);
-            command.Parameters["@pas"].Value = textBox2.Text;
-            command.Parameters.Add("@nam", SqlDbType.VarChar, 30);
-            command.Parameters["@nam"].Value = textBox3.Text;
-            command.Parameters.Add("@sur", SqlDbType.VarChar, 30);
-            command.Parameters["@sur"].Value = textBox4.Text;
-            command.Parameters.Add("@pos", SqlDbType.VarChar, 30);
-            command.Parameters["@pos"].Value = textBox5.Text;
-
+            SqlDataAdapter adapter = new SqlDataAdapter();
+            AddTextParameters(command, "@log", textBox1);
+            AddTextParameters(command, "@pas", textBox2);
+            AddTextParameters(command, "@nam", textBox3);
+            AddTextParameters(command, "@sur", textBox4);
+            AddTextParameters(command, "@pos", textBox5);
+            AddBoolParameters(command, "@enc", checkBox1);
+            AddBoolParameters(command, "@dec", checkBox2);
+            AddBoolParameters(command, "@acc", checkBox3);
+            AddBoolParameters(command, "@res", checkBox4);
+            AddBoolParameters(command, "@trf", checkBox5);
+            AddBoolParameters(command, "@cre", checkBox6);
+            AddBoolParameters(command, "@del", checkBox7);
+            AddBoolParameters(command, "@mod", checkBox8);
+            if (Form5.mode == 1) { AddIDParameter(command, "@uid", Form5.uid); }
+            adapter.SelectCommand = command;
+            command.ExecuteNonQuery();
             sqlc.Close();
         }
         private void button2_Click(object sender, EventArgs e)
         {
             this.Close();
         }
+        public static void AddTextParameters (SqlCommand command, string pam, System.Windows.Forms.TextBox textbox)
+        {
+            command.Parameters.Add(pam, SqlDbType.VarChar, 20);
+            command.Parameters[pam].Value = textbox.Text;
+        }
+        public static void AddBoolParameters (SqlCommand command, string pam, CheckBox checkBox)
+        {
+            command.Parameters.Add(pam, SqlDbType.TinyInt, 1);
+            command.Parameters[pam].Value = GetValueCheckbox(checkBox);
+        }
+        public static void AddIDParameter(SqlCommand command, string pam, int id)
+        {
+            command.Parameters.Add(pam, SqlDbType.Int, 5); //исправить под базу данных
+            command.Parameters[pam].Value = id;
+        }
+        public static int GetValueCheckbox (CheckBox checkBox)
+        {
+            int value;
+            if (checkBox.Checked == true) value = 1; else value = 0;
+            return value;
+        }
     }
 }
+

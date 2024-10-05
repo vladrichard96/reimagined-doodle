@@ -17,6 +17,7 @@ namespace WindowsFormsApp1
     public partial class Form5 : Form
     {
         public static int mode;
+        public static int uid;
         public Form5()
         {
             InitializeComponent();
@@ -59,6 +60,7 @@ namespace WindowsFormsApp1
             dataGridView1.Columns[11].HeaderText = "Создание польз.";
             dataGridView1.Columns[12].HeaderText = "Изменение польз.";
             dataGridView1.Columns[13].HeaderText = "Удаление польз.";
+            uid = dataGridView1.CurrentCell.RowIndex + 1;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -70,14 +72,33 @@ namespace WindowsFormsApp1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            mode = 1;
-            Form6 f6 = new Form6();
-            f6.Show();
+            if (uid > 0)
+            {
+                mode = 1;
+                Form6 f6 = new Form6();
+                f6.Show();
+            }
+            else MessageBox.Show("Выберите пользователя для действия!");
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-
+            if (uid > 0)
+            {
+                if (MessageBox.Show("Вы действительно хотите удалить запись? Это действие нельзя будет отменить", "Удаление записи", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    string conn = "Data Source=DESKTOP-MGN38Q8\\SQLEXPRESS;Initial Catalog=GruzhinskasDB;Integrated Security=True";
+                    SqlConnection sqlc = new SqlConnection(conn);
+                    sqlc.Open();
+                    string sql = "DELETE FROM Users WHERE userID = @uid";
+                    SqlCommand command = new SqlCommand(sql, sqlc);
+                    command.Parameters.Add("uid", uid);
+                    command.ExecuteNonQuery();
+                    sqlc.Close();
+                    MessageBox.Show("Запись была успешно удалена из базы данных", "Удаление записи", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else MessageBox.Show("Выберите пользователя для действия!");
         }
     }
 }
